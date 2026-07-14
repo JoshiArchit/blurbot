@@ -29,6 +29,15 @@ jobs:
       - name: Install Claude Code CLI
         run: npm install -g @anthropic-ai/claude-code
 
+      # Fail fast with a clear error if the OAuth token is missing/expired,
+      # rather than surfacing it deep inside the draft pipeline.
+      - name: Verify Claude CLI auth
+        run: |
+          claude --version
+          echo "reply with the single word: ok" | claude -p --tools "" --model sonnet
+        env:
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+
       - name: Run draft → critique → publish pipeline
         run: npm run draft
         env:
