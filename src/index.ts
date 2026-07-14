@@ -1,5 +1,6 @@
 import { runDraftLoop } from "./agent/loop.js";
 import { publishBlurb } from "./github/publish.js";
+import { fetchLastPublished } from "./github/activity.js";
 
 async function main() {
   const result = await runDraftLoop();
@@ -20,6 +21,12 @@ async function main() {
 
   console.log(`\n=== PASSED after ${result.iterations} iteration(s) ===`);
   console.log(result.blurb);
+
+  const published = await fetchLastPublished();
+  if (published && published.blurb.trim() === result.blurb.trim()) {
+    console.log("\nBlurb is unchanged from what's already published — skipping PR.");
+    return;
+  }
 
   const prUrl = await publishBlurb({
     blurb: result.blurb,

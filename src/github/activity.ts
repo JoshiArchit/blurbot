@@ -1,5 +1,6 @@
 import { octokit } from "./client.js";
 import { config } from "../config.js";
+import type { RecentWorkContent } from "./publish.js";
 
 export interface RepoActivity {
   repo: string;
@@ -56,7 +57,10 @@ async function findReposWithRecentPushes(since: Date): Promise<string[]> {
   return Array.from(repos);
 }
 
-export async function fetchLastPublishedAt(): Promise<Date | null> {
+// Reads the currently-published recent-work.json from the portfolio repo, or
+// null if it doesn't exist yet. Used both to derive the activity window and to
+// compare against a freshly drafted blurb before opening a redundant PR.
+export async function fetchLastPublished(): Promise<RecentWorkContent | null> {
   const { data } = await octokit.rest.repos
     .getContent({
       owner: config.portfolioRepoOwner,
@@ -72,8 +76,14 @@ export async function fetchLastPublishedAt(): Promise<Date | null> {
     return null;
   }
 
-  const parsed = JSON.parse(Buffer.from(data.content, "base64").toString("utf-8"));
-  return parsed.generatedAt ? new Date(parsed.generatedAt) : null;
+  return JSON.parse(
+    Buffer.from(data.content, "base64").toString("utf-8"),
+  ) as RecentWorkContent;
+}
+
+export async function fetchLastPublishedAt(): Promise<Date | null> {
+  const published = await fetchLastPublished();
+  return published?.generatedAt ? new Date(published.generatedAt) : null;
 }
 
 interface ProjectEntry {

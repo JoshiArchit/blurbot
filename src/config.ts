@@ -9,8 +9,8 @@ function requireEnv(name: string): string {
 }
 
 export const config = {
-  githubToken: requireEnv("GITHUB_TOKEN"),
-  githubUsername: requireEnv("GITHUB_USERNAME"),
+  githubToken: requireEnv("PORTFOLIO_TOKEN"),
+  githubUsername: requireEnv("GH_USERNAME"),
   portfolioRepoOwner: requireEnv("PORTFOLIO_REPO_OWNER"),
   portfolioRepoName: requireEnv("PORTFOLIO_REPO_NAME"),
   maxIterations: 3,

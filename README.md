@@ -35,13 +35,13 @@ npm install
 cp .env.example .env   # then fill in the values below
 ```
 
-| Variable | Description |
-| --- | --- |
-| `GITHUB_TOKEN` | Fine-grained GitHub token with read access to your activity and write access to the portfolio repo |
-| `GITHUB_USERNAME` | The GitHub user whose activity is read |
-| `PORTFOLIO_REPO_OWNER` | Owner of the portfolio repo the PR targets |
-| `PORTFOLIO_REPO_NAME` | Name of the portfolio repo (e.g. `yourname.github.io`) |
-| `CLAUDE_CODE_OAUTH_TOKEN` | Token for the Claude Code CLI (from `claude setup-token`) |
+| Variable                  | Description                                                                                        |
+| ------------------------- | -------------------------------------------------------------------------------------------------- |
+| `PORTFOLIO_TOKEN`         | Fine-grained GitHub token with read access to your activity and write access to the portfolio repo |
+| `GH_USERNAME`             | The GitHub user whose activity is read                                                             |
+| `PORTFOLIO_REPO_OWNER`    | Owner of the portfolio repo the PR targets                                                         |
+| `PORTFOLIO_REPO_NAME`     | Name of the portfolio repo (e.g. `yourname.github.io`)                                             |
+| `CLAUDE_CODE_OAUTH_TOKEN` | Token for the Claude Code CLI (from `claude setup-token`)                                          |
 
 ## Usage
 
@@ -51,6 +51,7 @@ npm run typecheck   # tsc --noEmit
 ```
 
 Outcomes:
+
 - **Passed** — a PR is opened against your portfolio repo; the URL is printed.
 - **No new activity** — nothing to do since the last published blurb.
 - **Flagged** — the draft never passed critique; the last draft and feedback are printed for manual review (exit code 1).

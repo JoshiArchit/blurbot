@@ -1,0 +1,39 @@
+name: Draft recent-work blurb
+
+on:
+  # Weekly on Monday 09:00 UTC — adjust to taste.
+  schedule:
+    - cron: "0 9 * * 1"
+  # Allow manual runs from the Actions tab.
+  workflow_dispatch:
+
+# Prevent overlapping runs from racing on the same monthly branch/PR.
+concurrency:
+  group: draft-blurb
+  cancel-in-progress: false
+
+jobs:
+  draft:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Claude Code CLI
+        run: npm install -g @anthropic-ai/claude-code
+
+      - name: Run draft → critique → publish pipeline
+        run: npm run draft
+        env:
+          PORTFOLIO_TOKEN: ${{ secrets.PORTFOLIO_TOKEN }}
+          GH_USERNAME: ${{ secrets.GH_USERNAME }}
+          PORTFOLIO_REPO_OWNER: ${{ secrets.PORTFOLIO_REPO_OWNER }}
+          PORTFOLIO_REPO_NAME: ${{ secrets.PORTFOLIO_REPO_NAME }}
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
