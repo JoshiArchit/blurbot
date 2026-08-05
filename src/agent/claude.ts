@@ -51,6 +51,25 @@ export function askClaude(prompt: string): Promise<string> {
   return runClaude(prompt, []);
 }
 
+// The CLI's structured-output mode occasionally leaks trailing tool-call-style
+// closing tags (e.g. "...text</feedback>\n</invoke>") into string fields —
+// the JSON itself stays valid, so schema validation doesn't catch it. Strip
+// that debris rather than passing it through to prompts and console output.
+function stripToolCallArtifacts(value: unknown): unknown {
+  if (typeof value === "string") {
+    return value.replace(/(\s*<\/[a-zA-Z_]+>)+\s*$/, "");
+  }
+  if (Array.isArray(value)) {
+    return value.map(stripToolCallArtifacts);
+  }
+  if (value && typeof value === "object") {
+    return Object.fromEntries(
+      Object.entries(value).map(([k, v]) => [k, stripToolCallArtifacts(v)]),
+    );
+  }
+  return value;
+}
+
 /** Same as askClaude, but constrains the response to the given JSON schema. */
 export async function askClaudeJSON<T>(prompt: string, jsonSchema: object): Promise<T> {
   const raw = await runClaude(prompt, [
@@ -61,5 +80,5 @@ export async function askClaudeJSON<T>(prompt: string, jsonSchema: object): Prom
   ]);
 
   const envelope = JSON.parse(raw);
-  return envelope.structured_output as T;
+  return stripToolCallArtifacts(envelope.structured_output) as T;
 }
