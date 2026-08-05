@@ -58,6 +58,14 @@ Outcomes:
 
 Nothing is ever pushed directly to your default branch — every update goes through a PR you review and merge.
 
+## GitHub Actions
+
+The pipeline also runs on a schedule in CI — see [.github/workflows/draft.yml](.github/workflows/draft.yml). It checks out the repo, installs the Claude Code CLI, verifies auth, then runs `npm run draft` the same way a local run would. No locally installed CLI or terminal is required.
+
+- **Schedule** — weekly, Monday 09:00 UTC (adjust the cron in the workflow file to taste), plus manual runs from the Actions tab (`workflow_dispatch`).
+- **Secrets** — set the same values as the `.env` variables above (`PORTFOLIO_TOKEN`, `GH_USERNAME`, `PORTFOLIO_REPO_OWNER`, `PORTFOLIO_REPO_NAME`, `CLAUDE_CODE_OAUTH_TOKEN`) as repository secrets.
+- **Concurrency** — runs are grouped so an overlapping scheduled/manual run won't race against one already in progress on the same monthly branch.
+
 ## Configuration
 
 Tunable defaults live in [src/config.ts](src/config.ts):
@@ -65,10 +73,6 @@ Tunable defaults live in [src/config.ts](src/config.ts):
 - `maxIterations` — critique/revise attempts before flagging (default 3)
 - `activityWindowDays` — fallback look-back window when no prior blurb exists (default 14)
 - `recentWorkPath` — path written in the portfolio repo (default `src/data/recent-work.json`)
-
-## Roadmap
-
-- **GitHub Actions integration (WIP)** — run the whole pipeline on a schedule from a GitHub Actions workflow instead of locally. This removes the need for a locally installed Claude Code CLI and a running terminal: activity gathering, drafting, critique, and opening the PR would all happen in CI, driven by repository secrets. Until this lands, `npm run draft` must be run locally with the `claude` CLI on your `PATH`.
 
 ## Project layout
 

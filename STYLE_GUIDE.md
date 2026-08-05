@@ -2,21 +2,29 @@
 
 Derived from the existing voice in `src/data/projects.json` on the portfolio site.
 
+This blurb fills the "what I'm currently working on" slot on the portfolio. Its job is to
+signal that Archit is active and upskilling — a snapshot of momentum, not a changelog. A
+reader should come away with a sense of the project and what's happening on it right now,
+not a list of everything that got committed.
+
 ## Structure
 
 Two beats, one short paragraph (2-4 sentences total):
 
 1. **Context** — one sentence framing why the thing matters or what problem space it's in. Not about Archit yet — about the subject.
-2. **What was built** — what was actually done, with specific technical details (stack, techniques, scale). Written in past tense, active voice ("Built", "Analyzed", "Compared"), not "I built" or "This project builds".
+2. **What's in motion** — the project and the current thread of work, in plain language. Pick the one or two most meaningful things happening, not a running tally of every commit. Written in past tense, active voice ("Built", "Analyzed", "Compared"), not "I built" or "This project builds".
 
 ## Voice rules
 
-- Specific over generic. Name the stack, the dataset size, the algorithm — not "used modern technologies."
+- Specific over generic. Name the project, the stack, and the standout feature or technique — not "used modern technologies."
+- Synthesize, don't transcribe. Read the commit history for what it adds up to — a capability, a feature, a direction — and describe that. Don't walk through commits one by one or restate commit messages back to back.
+- Name technologies, not implementation details. Libraries, frameworks, and tools are fair game — backticks are fine for calling one out (`tokei`, `tauri-plugin-store`), same as the reference examples name Convex, PostgreSQL, and the Apriori algorithm. But skip internal identifiers a reader has no reason to know — function/hook/variable names, file paths — since they describe the code, not the project. Write "persists scanned repos across restarts using `tauri-plugin-store`" — not "a `usePersistedRepoList` hook backed by `tauri-plugin-store`."
+- No grab-bag lists. Avoid stringing three-plus small, unrelated changes together with "along with" or comma chains ("...featuring X, Y, Z, and W"). If the recent activity is a pile of small fixes, pick the one that matters most and drop the rest — this isn't a release log.
 - No marketing fluff: avoid "leverage", "seamless", "cutting-edge", "robust solution", "game-changing."
 - Dash-clause style is fine for adding a technical aside, e.g. "— covering data modeling, query optimization, and indexing."
 - Confident, matter-of-fact tone. No hedging ("might", "attempted to", "hopefully").
 - Keep it to one paragraph. This isn't a project card — it's a short "here's what I've been building lately" line.
-- Reference real repos/commits from the activity feed, not general topics ("been doing some backend work").
+- Ground it in the real repos and activity given, not general topics ("been doing some backend work") — but ground it in what the work amounts to, not a transcript of the commit log.
 
 ## Reference examples (from `projects.json`)
 
@@ -29,6 +37,8 @@ Two beats, one short paragraph (2-4 sentences total):
 A draft passes if it:
 - [ ] Opens with context/framing, not "I recently worked on..."
 - [ ] Names specific technologies, repos, or techniques from the actual activity data (no invented details)
+- [ ] Any backticked terms name a technology/library/tool, not an internal function/hook/variable name or file path
+- [ ] Reads as a synthesized "what's in motion" narrative, not an enumerated list of commits or changes
 - [ ] Avoids all banned marketing words above
 - [ ] Is one paragraph, roughly 2-4 sentences
 - [ ] Reads like it could sit next to the existing project entries without clashing in tone
