@@ -6,7 +6,7 @@ import {
   type RepoActivity,
 } from "../github/activity.js";
 import { draftBlurb, reviseBlurb } from "./draft.js";
-import { critiqueBlurb } from "./critique.js";
+import { critiqueBlurb, localCritique } from "./critique.js";
 
 export interface LoopResult {
   status: "passed" | "flagged" | "no-new-activity";
@@ -44,7 +44,7 @@ export async function runDraftLoop(): Promise<LoopResult> {
     console.log(`\n--- Iteration ${iteration} ---`);
     console.log(`Draft:\n${draft}`);
 
-    const critique = await critiqueBlurb(draft);
+    const critique = localCritique(draft) ?? (await critiqueBlurb(draft, activity));
     console.log(`Critique: ${critique.passes ? "PASS" : "FAIL"} — ${critique.feedback}`);
     lastFeedback = critique.feedback;
 
