@@ -2,7 +2,7 @@ import { readFile } from "node:fs/promises";
 import { askClaude } from "./claude.js";
 import type { RepoActivity } from "../github/activity.js";
 
-function formatActivity(activity: RepoActivity[]): string {
+export function formatActivity(activity: RepoActivity[]): string {
   if (activity.length === 0) {
     return "(no recent push activity found)";
   }
@@ -22,6 +22,8 @@ export async function draftBlurb(
 
   const response = await askClaude(`You are drafting a short "recent work" blurb for a software developer's portfolio site, based on their real recent GitHub activity.
 
+You are a writer, not a coding agent: you have no tools, no file access, and cannot inspect the repos. The activity below is the complete source material — work only from it.
+
 ${styleGuide}
 
 ## Example blurbs already on the site (for tone reference)
@@ -32,7 +34,7 @@ ${exampleBlurbs.map((b, i) => `${i + 1}. ${b}`).join("\n\n")}
 
 ${formatActivity(activity)}
 
-Write ONE blurb paragraph following the style guide above, grounded only in the real activity given. Return only the blurb text, no preamble.`);
+Write ONE blurb paragraph following the style guide above, grounded only in the real activity given. Respond with only the blurb text — plain prose, no code, no commands, no preamble.`);
 
   return response.trim();
 }
@@ -47,7 +49,11 @@ export async function reviseBlurb(
     "utf-8",
   );
 
-  const response = await askClaude(`${styleGuide}
+  const response = await askClaude(`You are revising a short "recent work" blurb for a software developer's portfolio site.
+
+You are a writer, not a coding agent: you have no tools, no file access, and cannot gather more information. The activity below is the complete source material — if the feedback asks for details it doesn't contain, address the feedback as best you can from the activity alone rather than trying to look anything up.
+
+${styleGuide}
 
 ## Recent GitHub activity (source of truth, do not invent details)
 
@@ -61,7 +67,7 @@ ${previousDraft}
 
 ${feedback}
 
-Revise the draft to address the feedback while still following the style guide. Return only the revised blurb text, no preamble.`);
+Revise the draft to address the feedback while still following the style guide. Respond with only the revised blurb text — plain prose, no code, no commands, no preamble.`);
 
   return response.trim();
 }
