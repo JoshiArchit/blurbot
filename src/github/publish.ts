@@ -4,6 +4,10 @@ import { config } from "../config.js";
 export interface RecentWorkEntry {
   repo: string;
   blurb: string;
+  // Fingerprint of the activity this blurb was drafted from — lets the next
+  // run keep the blurb verbatim when the repo's activity hasn't changed.
+  // Absent on entries published before digests were introduced.
+  activityDigest?: string;
 }
 
 export interface RecentWorkContent {
