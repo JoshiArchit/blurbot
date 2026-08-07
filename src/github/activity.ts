@@ -4,6 +4,9 @@ import type { RecentWorkContent } from "./publish.js";
 
 export interface RepoActivity {
   repo: string;
+  // The repo's GitHub "About" description — gives the drafter project-level
+  // context so blurbs describe what the project is, not just what changed.
+  description: string | null;
   commitMessages: string[];
 }
 
@@ -31,9 +34,14 @@ export async function fetchRecentActivity(since: Date): Promise<RepoActivity[]> 
     });
 
     const commitMessages = commits.map((c) => c.commit.message.split("\n")[0]);
-    if (commitMessages.length > 0) {
-      activity.push({ repo: fullName, commitMessages });
-    }
+    if (commitMessages.length === 0) continue;
+
+    const { data: repoInfo } = await octokit.rest.repos.get({ owner, repo });
+    activity.push({
+      repo: fullName,
+      description: repoInfo.description,
+      commitMessages,
+    });
   }
 
   return activity;
@@ -86,11 +94,6 @@ export async function fetchLastPublished(): Promise<RecentWorkContent | null> {
   return JSON.parse(
     Buffer.from(data.content, "base64").toString("utf-8"),
   ) as RecentWorkContent;
-}
-
-export async function fetchLastPublishedAt(): Promise<Date | null> {
-  const published = await fetchLastPublished();
-  return published?.generatedAt ? new Date(published.generatedAt) : null;
 }
 
 interface ProjectEntry {

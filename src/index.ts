@@ -33,10 +33,19 @@ async function main() {
     }
   }
 
+  // Compare on repo + blurb, order-insensitively — a ranking reshuffle of
+  // otherwise-identical entries isn't worth a PR.
+  const normalize = (entries: { repo: string; blurb?: string }[]) =>
+    JSON.stringify(
+      [...entries]
+        .sort((a, b) => a.repo.localeCompare(b.repo))
+        .map((e) => ({ repo: e.repo, blurb: e.blurb })),
+    );
+
   const published = await fetchLastPublished();
   const unchanged =
     Array.isArray(published?.entries) &&
-    JSON.stringify(published.entries) === JSON.stringify(result.entries);
+    normalize(published.entries) === normalize(result.entries);
   if (unchanged) {
     console.log("\nEntries are unchanged from what's already published — skipping PR.");
     return;

@@ -7,7 +7,10 @@ export function formatActivity(activity: RepoActivity[]): string {
     return "(no recent push activity found)";
   }
   return activity
-    .map((a) => `Repo: ${a.repo}\nCommits:\n${a.commitMessages.map((m) => `- ${m}`).join("\n")}`)
+    .map((a) => {
+      const about = a.description ? `About: ${a.description}\n` : "";
+      return `Repo: ${a.repo}\n${about}Commits:\n${a.commitMessages.map((m) => `- ${m}`).join("\n")}`;
+    })
     .join("\n\n");
 }
 
@@ -34,7 +37,7 @@ ${exampleBlurbs.map((b, i) => `${i + 1}. ${b}`).join("\n\n")}
 
 ${formatActivity(activity)}
 
-Write ONE blurb paragraph following the style guide above, grounded only in the real activity given. Respond with only the blurb text — plain prose, no code, no commands, no preamble.`);
+Write ONE blurb paragraph following the style guide above, grounded only in the real activity given. Use the repo's About line to frame what the project is; the commits are the current thread of work within it. Write for a reader seeing the project for the first time. Respond with only the blurb text — plain prose, no code, no commands, no preamble.`);
 
   return response.trim();
 }

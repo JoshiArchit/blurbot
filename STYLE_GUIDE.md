@@ -21,6 +21,7 @@ Two beats, one short paragraph (2-4 sentences total):
 
 - Specific over generic. Name the project, the stack, and the standout feature or technique — not "used modern technologies."
 - Synthesize, don't transcribe. Read the commit history for what it adds up to — a capability, a feature, a direction — and describe that. Don't walk through commits one by one or restate commit messages back to back.
+- No diff-speak. The reader has never seen the repo's previous state, so never frame the work as a change relative to it: no "instead of just one", "rather than X", "now supports", "no longer", "previously". Describe what the project is and what the recent work built, on its own terms.
 - Name technologies, not implementation details. Libraries, frameworks, and tools are fair game — backticks are fine for calling one out (`tokei`, `tauri-plugin-store`), same as the reference examples name Convex, PostgreSQL, and the Apriori algorithm. But skip internal identifiers a reader has no reason to know — function/hook/variable names, file paths — since they describe the code, not the project. Write "persists scanned repos across restarts using `tauri-plugin-store`" — not "a `usePersistedRepoList` hook backed by `tauri-plugin-store`."
 - No grab-bag lists. Avoid stringing three-plus small, unrelated changes together with "along with" or comma chains ("...featuring X, Y, Z, and W"). If the recent activity is a pile of small fixes, pick the one that matters most and drop the rest — this isn't a release log.
 - No marketing fluff: avoid "leverage", "seamless", "cutting-edge", "robust solution", "game-changing."
@@ -42,6 +43,7 @@ A draft passes if it:
 - [ ] Names specific technologies, repos, or techniques from the actual activity data (no invented details)
 - [ ] Any backticked terms name a technology/library/tool, not an internal function/hook/variable name or file path
 - [ ] Reads as a synthesized "what's in motion" narrative, not an enumerated list of commits or changes
+- [ ] Contains no diff-speak — nothing framed as a change from a previous state ("instead of", "now supports", "previously")
 - [ ] Avoids all banned marketing words above
 - [ ] Is one paragraph, roughly 2-4 sentences
 - [ ] Reads like it could sit next to the existing project entries without clashing in tone
