@@ -14,6 +14,7 @@ export const config = {
   portfolioRepoOwner: requireEnv("PORTFOLIO_REPO_OWNER"),
   portfolioRepoName: requireEnv("PORTFOLIO_REPO_NAME"),
   maxIterations: 3,
+  maxEntries: 3,
   activityWindowDays: 14,
   recentWorkPath: "src/data/recent-work.json",
 };

@@ -12,26 +12,39 @@ async function main() {
 
   if (result.status === "flagged") {
     console.log("\n=== FLAGGED FOR MANUAL REVIEW ===");
-    console.log(`Did not pass critique after ${result.iterations} iterations.`);
-    console.log(`Last feedback: ${result.lastFeedback}`);
-    console.log(`\nLast draft:\n${result.blurb}`);
+    console.log("No entry passed critique.");
+    for (const f of result.flagged) {
+      console.log(`\n[${f.repo}] Last feedback: ${f.feedback}`);
+      console.log(`Last draft:\n${f.draft}`);
+    }
     process.exitCode = 1;
     return;
   }
 
-  console.log(`\n=== PASSED after ${result.iterations} iteration(s) ===`);
-  console.log(result.blurb);
+  console.log(`\n=== ${result.entries.length} entr${result.entries.length === 1 ? "y" : "ies"} passed ===`);
+  for (const e of result.entries) {
+    console.log(`\n[${e.repo}]\n${e.blurb}`);
+  }
+
+  if (result.flagged.length > 0) {
+    console.log(`\nSkipped ${result.flagged.length} repo(s) that never passed critique:`);
+    for (const f of result.flagged) {
+      console.log(`- ${f.repo}: ${f.feedback}`);
+    }
+  }
 
   const published = await fetchLastPublished();
-  if (published && published.blurb.trim() === result.blurb.trim()) {
-    console.log("\nBlurb is unchanged from what's already published — skipping PR.");
+  const unchanged =
+    Array.isArray(published?.entries) &&
+    JSON.stringify(published.entries) === JSON.stringify(result.entries);
+  if (unchanged) {
+    console.log("\nEntries are unchanged from what's already published — skipping PR.");
     return;
   }
 
   const prUrl = await publishBlurb({
-    blurb: result.blurb,
+    entries: result.entries,
     generatedAt: new Date().toISOString(),
-    sourceRepos: result.sourceRepos,
   });
 
   console.log(`\nOpened PR: ${prUrl}`);

@@ -7,6 +7,9 @@ signal that Archit is active and upskilling — a snapshot of momentum, not a ch
 reader should come away with a sense of the project and what's happening on it right now,
 not a list of everything that got committed.
 
+The site shows up to three of these at once — one per project — so each blurb covers
+exactly one repo's work. Never fold a second project into the same blurb; it gets its own.
+
 ## Structure
 
 Two beats, one short paragraph (2-4 sentences total):
