@@ -14,10 +14,11 @@ GitHub activity ──► draft ──► critique ──┐
                                     open PR for review
 ```
 
-1. **Gather activity** — finds repos you've pushed to since the last published blurb (falling back to a 14-day window), then pulls your real commit messages for each. See [src/github/activity.ts](src/github/activity.ts).
-2. **Draft** — generates a blurb grounded only in that activity, using your existing portfolio entries as tone reference and [STYLE_GUIDE.md](STYLE_GUIDE.md) as the rulebook. See [src/agent/draft.ts](src/agent/draft.ts).
-3. **Critique loop** — a separate critique pass scores the draft against the style guide's checklist and returns structured pass/fail + feedback. On failure it revises and retries, up to `maxIterations` (default 3). See [src/agent/loop.ts](src/agent/loop.ts) and [src/agent/critique.ts](src/agent/critique.ts).
-4. **Publish** — on pass, it commits the blurb to a dated branch in your portfolio repo and opens a PR titled "Update recent work blurb." If the draft never passes, it's flagged for manual review and no PR is opened. See [src/github/publish.ts](src/github/publish.ts).
+1. **Gather activity** — finds repos you've pushed to since the last published blurb (falling back to a 14-day window), then pulls your real commit messages for each. The portfolio repo itself is always excluded, since its pushes are mostly this bot's own merged PRs. See [src/github/activity.ts](src/github/activity.ts).
+2. **Pick top repos** — ranks active repos by commit count and keeps the top `maxEntries` (default 3). Each gets its own blurb, so the portfolio can render them as separate "working on" cards or carousel slides.
+3. **Draft** — per repo, generates a blurb grounded only in that repo's activity, using your existing portfolio entries as tone reference and [STYLE_GUIDE.md](STYLE_GUIDE.md) as the rulebook. See [src/agent/draft.ts](src/agent/draft.ts).
+4. **Critique loop** — a separate critique pass scores each draft against the style guide's checklist and returns structured pass/fail + feedback. On failure it revises and retries, up to `maxIterations` (default 3). See [src/agent/loop.ts](src/agent/loop.ts) and [src/agent/critique.ts](src/agent/critique.ts).
+5. **Publish** — entries that pass are committed to a dated branch in your portfolio repo as `{ entries: [{ repo, blurb }], generatedAt }`, and a PR titled "Update recent work blurb" is opened. A repo whose draft never passes is skipped with a console warning; if *no* entry passes, the run is flagged for manual review and no PR is opened. See [src/github/publish.ts](src/github/publish.ts).
 
 The draft and critique steps shell out to a locally installed **Claude Code CLI** in headless mode ([src/agent/claude.ts](src/agent/claude.ts)) — using your Claude subscription rather than paid API billing. Tools are disabled so the CLI only ever generates text.
 
@@ -52,9 +53,9 @@ npm run typecheck   # tsc --noEmit
 
 Outcomes:
 
-- **Passed** — a PR is opened against your portfolio repo; the URL is printed.
+- **Passed** — at least one entry passed critique; a PR is opened against your portfolio repo and the URL is printed. Repos whose drafts never passed are skipped with a warning.
 - **No new activity** — nothing to do since the last published blurb.
-- **Flagged** — the draft never passed critique; the last draft and feedback are printed for manual review (exit code 1).
+- **Flagged** — no entry passed critique; the last drafts and feedback are printed for manual review (exit code 1).
 
 Nothing is ever pushed directly to your default branch — every update goes through a PR you review and merge.
 
@@ -70,7 +71,8 @@ The pipeline also runs on a schedule in CI — see [.github/workflows/draft.yml]
 
 Tunable defaults live in [src/config.ts](src/config.ts):
 
-- `maxIterations` — critique/revise attempts before flagging (default 3)
+- `maxIterations` — critique/revise attempts per entry before skipping it (default 3)
+- `maxEntries` — maximum number of repo entries drafted per run (default 3)
 - `activityWindowDays` — fallback look-back window when no prior blurb exists (default 14)
 - `recentWorkPath` — path written in the portfolio repo (default `src/data/recent-work.json`)
 

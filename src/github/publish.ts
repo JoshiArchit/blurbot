@@ -1,10 +1,18 @@
 import { octokit } from "./client.js";
 import { config } from "../config.js";
 
-export interface RecentWorkContent {
+export interface RecentWorkEntry {
+  repo: string;
   blurb: string;
+}
+
+export interface RecentWorkContent {
+  // One entry per active repo (most active first) — rendered as separate
+  // "working on" cards/carousel slides on the portfolio. Older published
+  // files may predate this shape and carry a single `blurb` string instead.
+  entries?: RecentWorkEntry[];
+  blurb?: string;
   generatedAt: string;
-  sourceRepos: string[];
 }
 
 export async function publishBlurb(content: RecentWorkContent): Promise<string> {
@@ -61,7 +69,8 @@ export async function publishBlurb(content: RecentWorkContent): Promise<string> 
     sha: existingSha,
   });
 
-  const body = `Auto-drafted "recent work" blurb based on recent GitHub activity (source repos: ${content.sourceRepos.join(", ") || "none"}). Please review before merging.`;
+  const sourceRepos = (content.entries ?? []).map((e) => e.repo);
+  const body = `Auto-drafted "recent work" entries based on recent GitHub activity (source repos: ${sourceRepos.join(", ") || "none"}). Please review before merging.`;
 
   // A scheduled run that reuses this month's branch would hit a 422 from
   // pulls.create if a PR is already open for it — reuse the existing PR

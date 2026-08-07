@@ -13,8 +13,15 @@ export interface RepoActivity {
 export async function fetchRecentActivity(since: Date): Promise<RepoActivity[]> {
   const recentRepos = await findReposWithRecentPushes(since);
 
+  // Never treat the portfolio repo itself as source material: its pushes are
+  // largely this bot's own merged blurb PRs, so including it would feed the
+  // agent its own output back as "recent work."
+  const portfolioRepo =
+    `${config.portfolioRepoOwner}/${config.portfolioRepoName}`.toLowerCase();
+
   const activity: RepoActivity[] = [];
   for (const fullName of recentRepos) {
+    if (fullName.toLowerCase() === portfolioRepo) continue;
     const [owner, repo] = fullName.split("/");
     const { data: commits } = await octokit.rest.repos.listCommits({
       owner,
