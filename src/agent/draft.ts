@@ -2,6 +2,13 @@ import { readFile } from "node:fs/promises";
 import { askClaude } from "./claude.js";
 import type { RepoActivity } from "../github/activity.js";
 
+/**
+ * Renders repo activity as prompt text: one block per repo with its About
+ * line (when it has one) and a bulleted list of commit subjects.
+ *
+ * Exported so the critique prompt can show the critic exactly what the
+ * drafter saw.
+ */
 export function formatActivity(activity: RepoActivity[]): string {
   if (activity.length === 0) {
     return "(no recent push activity found)";
@@ -14,6 +21,14 @@ export function formatActivity(activity: RepoActivity[]): string {
     .join("\n\n");
 }
 
+/**
+ * Drafts a blurb from scratch for the given activity.
+ *
+ * @param activity source material — in the per-repo flow, a single repo.
+ * @param exampleBlurbs existing portfolio entries, included as tone reference.
+ * @returns the blurb paragraph, trimmed. It isn't validated here; the
+ *   critique loop checks it.
+ */
 export async function draftBlurb(
   activity: RepoActivity[],
   exampleBlurbs: string[],
@@ -37,11 +52,20 @@ ${exampleBlurbs.map((b, i) => `${i + 1}. ${b}`).join("\n\n")}
 
 ${formatActivity(activity)}
 
-Write ONE blurb paragraph following the style guide above, grounded only in the real activity given. Use the repo's About line to frame what the project is; the commits are the current thread of work within it. Write for a reader seeing the project for the first time. Respond with only the blurb text — plain prose, no code, no commands, no preamble.`);
+Write ONE blurb paragraph following the style guide above, grounded only in the real activity given. Paraphrase the repo's About line in a clause to say what the project is — don't copy it, and don't present anything it already names as new work. Pick a single thread from the commits for the recent-work sentence. Write short sentences for a reader seeing the project for the first time. Respond with only the blurb text — plain prose, no code, no commands, no preamble.`);
 
   return response.trim();
 }
 
+/**
+ * Rewrites a draft to address critique feedback.
+ *
+ * @param previousDraft the draft that failed critique.
+ * @param feedback the critic's (or local guard's) explanation of what to fix.
+ * @param activity the same source material the original draft used — the
+ *   reviser must not draw on anything else.
+ * @returns the revised blurb paragraph, trimmed.
+ */
 export async function reviseBlurb(
   previousDraft: string,
   feedback: string,

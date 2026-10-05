@@ -2,6 +2,13 @@ import { runDraftLoop } from "./agent/loop.js";
 import { publishBlurb } from "./github/publish.js";
 import { fetchLastPublished } from "./github/activity.js";
 
+/**
+ * CLI entry point: runs the draft pipeline, prints each outcome, and — when
+ * the passing entries differ from what's already published — opens a PR.
+ *
+ * Sets a non-zero exit code when no entry passed critique, so scheduled runs
+ * surface the failure.
+ */
 async function main() {
   const result = await runDraftLoop();
 
@@ -33,9 +40,12 @@ async function main() {
     }
   }
 
-  // Compare on repo + blurb, order-insensitively — a ranking reshuffle of
-  // otherwise-identical entries isn't worth a PR.
-  const normalize = (entries: { repo: string; blurb?: string }[]) =>
+  /**
+   * Canonical form of a set of entries for comparison: repo + blurb only,
+   * sorted by repo, so a ranking reshuffle of otherwise-identical entries
+   * isn't worth a PR.
+   */
+  const normalize =(entries: { repo: string; blurb?: string }[]) =>
     JSON.stringify(
       [...entries]
         .sort((a, b) => a.repo.localeCompare(b.repo))

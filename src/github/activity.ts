@@ -10,9 +10,15 @@ export interface RepoActivity {
   commitMessages: string[];
 }
 
-// Finds repos with a push since `since`, then fetches real commit messages
-// per repo — the public events API no longer includes commit messages in
-// PushEvent payloads, only head/before SHAs.
+/**
+ * Gathers the user's recent work: every repo pushed to since `since`, each
+ * with the user's own commit subject lines and the repo's About description.
+ *
+ * The public events API is only used to find which repos had pushes — it no
+ * longer includes commit messages in PushEvent payloads, only head/before
+ * SHAs — so real commits are then listed per repo. The portfolio repo is
+ * always excluded, and repos with no matching commits are dropped.
+ */
 export async function fetchRecentActivity(since: Date): Promise<RepoActivity[]> {
   const recentRepos = await findReposWithRecentPushes(since);
 
@@ -47,6 +53,11 @@ export async function fetchRecentActivity(since: Date): Promise<RepoActivity[]> 
   return activity;
 }
 
+/**
+ * Returns the full names (owner/repo) of repos the user pushed to since
+ * `since`, from the public events feed. Pages through up to 10 pages of 100
+ * events (newest first) and stops at the first event older than `since`.
+ */
 async function findReposWithRecentPushes(since: Date): Promise<string[]> {
   const repos = new Set<string>();
 
@@ -72,9 +83,14 @@ async function findReposWithRecentPushes(since: Date): Promise<string[]> {
   return Array.from(repos);
 }
 
-// Reads the currently-published recent-work.json from the portfolio repo, or
-// null if it doesn't exist yet. Used both to derive the activity window and to
-// compare against a freshly drafted blurb before opening a redundant PR.
+/**
+ * Reads the currently-published recent-work.json from the portfolio repo.
+ *
+ * Used to reuse published blurbs for repos whose activity is unchanged, and to
+ * skip opening a redundant PR when the new entries match what's published.
+ *
+ * @returns the parsed file, or null if it doesn't exist yet.
+ */
 export async function fetchLastPublished(): Promise<RecentWorkContent | null> {
   const { data } = await octokit.rest.repos
     .getContent({
@@ -101,6 +117,13 @@ interface ProjectEntry {
   description: string;
 }
 
+/**
+ * Reads the portfolio's `src/data/projects.json` and returns its first
+ * `count` projects as "context description" strings, used as tone reference
+ * when drafting.
+ *
+ * @throws if the file is missing or isn't a regular file.
+ */
 export async function fetchExampleBlurbs(count = 3): Promise<string[]> {
   const { data } = await octokit.rest.repos.getContent({
     owner: config.portfolioRepoOwner,
