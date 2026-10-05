@@ -1,5 +1,10 @@
 import "dotenv/config";
 
+/**
+ * Reads a required environment variable.
+ *
+ * @throws if the variable is unset or empty, so misconfiguration fails at startup.
+ */
 function requireEnv(name: string): string {
   const value = process.env[name];
   if (!value) {

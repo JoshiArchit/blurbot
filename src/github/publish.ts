@@ -19,6 +19,17 @@ export interface RecentWorkContent {
   generatedAt: string;
 }
 
+/**
+ * Commits `content` to the portfolio repo's recent-work file on a monthly
+ * branch (`content/update-YYYY-MM`) and opens a PR for human review. Nothing
+ * is ever pushed to the default branch.
+ *
+ * Safe to re-run within a month: the branch is created from the default
+ * branch's head, or force-reset to it if it already exists, and an
+ * already-open PR for the branch is reused instead of opening a duplicate.
+ *
+ * @returns the URL of the new (or reused) pull request.
+ */
 export async function publishBlurb(content: RecentWorkContent): Promise<string> {
   const owner = config.portfolioRepoOwner;
   const repo = config.portfolioRepoName;

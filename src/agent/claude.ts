@@ -13,6 +13,16 @@ const BASE_ARGS = [
   "", // skip CLAUDE.md/memory auto-discovery so prompts stay isolated
 ];
 
+/**
+ * Spawns the headless Claude CLI, pipes `prompt` to its stdin, and resolves
+ * with its trimmed stdout.
+ *
+ * @param extraArgs flags appended after the shared BASE_ARGS (e.g. the
+ *   structured-output flags used by askClaudeJSON).
+ * @throws if the process can't be spawned or exits non-zero. The message
+ *   includes both stderr and stdout, since the CLI often reports auth errors
+ *   on stdout.
+ */
 function runClaude(prompt: string, extraArgs: string[]): Promise<string> {
   return new Promise((resolve, reject) => {
     const child = spawn("claude", [...BASE_ARGS, ...extraArgs], {
@@ -51,10 +61,14 @@ export function askClaude(prompt: string): Promise<string> {
   return runClaude(prompt, []);
 }
 
-// The CLI's structured-output mode occasionally leaks trailing tool-call-style
-// closing tags (e.g. "...text</feedback>\n</invoke>") into string fields —
-// the JSON itself stays valid, so schema validation doesn't catch it. Strip
-// that debris rather than passing it through to prompts and console output.
+/**
+ * Recursively strips trailing tool-call-style closing tags (e.g.
+ * "</feedback>\n</invoke>") from every string in a parsed JSON value.
+ *
+ * The CLI's structured-output mode occasionally leaks these into string
+ * fields. The JSON itself stays valid, so schema validation doesn't catch it,
+ * and the debris would otherwise flow into prompts and console output.
+ */
 function stripToolCallArtifacts(value: unknown): unknown {
   if (typeof value === "string") {
     return value.replace(/(\s*<\/[a-zA-Z_]+>)+\s*$/, "");
@@ -70,7 +84,14 @@ function stripToolCallArtifacts(value: unknown): unknown {
   return value;
 }
 
-/** Same as askClaude, but constrains the response to the given JSON schema. */
+/**
+ * Same as askClaude, but constrains the response to the given JSON schema.
+ *
+ * @param jsonSchema JSON Schema the CLI validates its structured output against.
+ * @returns the parsed `structured_output`, with leaked tool-call tags stripped
+ *   from string fields. Callers are trusted to pass a schema matching `T` —
+ *   it isn't re-validated here.
+ */
 export async function askClaudeJSON<T>(prompt: string, jsonSchema: object): Promise<T> {
   const raw = await runClaude(prompt, [
     "--output-format",
